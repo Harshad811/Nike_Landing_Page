@@ -6,19 +6,31 @@ stages:
   displayName: Build and Publish to Azure Artifacts
   jobs:
   - job: Build
+    displayName: Build and Publish npm Package
     pool:
       vmImage: 'ubuntu-latest'
-    steps:
 
+    steps:
     - task: NodeTool@0
       inputs:
         versionSpec: '22.x'
       displayName: 'Use Node.js'
 
+    # Authenticate npm with Azure Artifacts feed
+    - task: NpmAuthenticate@0
+      inputs:
+        workingFile: .npmrc
+      displayName: 'Authenticate with Azure Artifacts'
+
     - task: Npm@1
       inputs:
         command: 'install'
       displayName: 'Install dependencies'
+
+    # Auto-increment version (VERY IMPORTANT)
+    - script: |
+        npm version patch --no-git-tag-version
+      displayName: 'Increment package version'
 
     - task: Npm@1
       inputs:
