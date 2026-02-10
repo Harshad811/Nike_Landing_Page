@@ -2,31 +2,33 @@ trigger:
 - main
 
 stages:
-- stage: BuildAndPublish
+- stage: Build
+  displayName: Build Frontend
   jobs:
-  - job: Build
+  - job: BuildJob
     pool:
       vmImage: 'ubuntu-latest'
-    steps:
 
+    steps:
     - task: NodeTool@0
       inputs:
         versionSpec: '18.x'
+      displayName: 'Use Node.js'
 
     - task: Npm@1
       inputs:
         command: 'install'
-
-    - script: npm version patch --no-git-tag-version
-      displayName: 'Increment version'
+      displayName: 'Install dependencies'
 
     - task: Npm@1
       inputs:
         command: 'custom'
         customCommand: 'run build'
+      displayName: 'Build app'
 
-    - task: Npm@1
+    # ✅ THIS replaces npm publish
+    - task: PublishPipelineArtifact@1
       inputs:
-        command: 'publish'
-        publishRegistry: 'useFeed'
-        publishFeed: '5a34020f-7d20-42dd-9461-98536ac11ff7'
+        targetPath: 'dist'
+        artifact: 'frontend-dist'
+      displayName: 'Publish build artifact'
